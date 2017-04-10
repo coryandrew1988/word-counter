@@ -5,7 +5,7 @@ const {
 } = require('vscode');
 
 const countWords = (text) => {
-    const matches = text.match(/\S+/g);
+    const matches = text.match(/[^\s—]*[a-zA-Z][^\s—]*/g);
     if (!matches) { return 0; }
     
     return matches.length;
