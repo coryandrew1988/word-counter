@@ -1,30 +1,68 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-var vscode = require('vscode');
+const {
+    window,
+    Disposable,
+    StatusBarAlignment
+} = require('vscode');
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
-function activate(context) {
+const countWords = (text) => {
+    const matches = text.match(/\S+/g);
+    if (!matches) { return 0; }
+    
+    return matches.length;
+};
 
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "word-counter" is now active!');
+const createWordCounter = () => {
+    const statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
 
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with  registerCommand
-    // The commandId parameter must match the command field in package.json
-    var disposable = vscode.commands.registerCommand('extension.sayHello', function () {
-        // The code you place here will be executed every time your command is executed
+    return {
+        update: () => {
+            const editor = window.activeTextEditor;
 
-        // Display a message box to the user
-        vscode.window.showInformationMessage('Hello World!');
-    });
+            if (!editor) {
+                statusBarItem.hide();
+                return;
+            }
 
-    context.subscriptions.push(disposable);
-}
-exports.activate = activate;
+            const { document } = editor;
 
-// this method is called when your extension is deactivated
-function deactivate() {
-}
-exports.deactivate = deactivate;
+            if (document.languageId !== 'markdown') {
+                statusBarItem.hide();
+                return;
+            }
+
+            const wordCount = countWords(document.getText());
+            statusBarItem.text = (
+                wordCount === 1 ?
+                '$(pencil) 1 Word' :
+                `$(pencil) ${wordCount} Words`
+            );
+            statusBarItem.show();
+        },
+        dispose: () => {
+            statusBarItem.dispose();
+        }
+    };
+};
+
+const createWordCounterController = () => {
+    const wordCounter = createWordCounter();
+    wordCounter.update();
+
+    const eventDisposable = Disposable.from([
+        window.onDidChangeActiveTextEditor(wordCounter.update),
+        window.onDidChangeTextEditorSelection(wordCounter.update)
+    ]);
+
+    return {
+        dispose: () => {
+            wordCounter.dispose();
+            eventDisposable.dispose();
+        }
+    };
+};
+
+exports.activate = (context) => {
+    const controller = createWordCounterController();
+
+    context.subscriptions.push(controller);
+};

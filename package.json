@@ -1,6 +1,6 @@
 {
     "name": "word-counter",
-    "displayName": ".",
+    "displayName": "word-counter",
     "description": "Displays a word-count on your status bar.",
     "version": "0.0.1",
     "publisher": "plus5keen",
@@ -11,15 +11,9 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello"
+        "onLanguage:markdown"
     ],
     "main": "./extension",
-    "contributes": {
-        "commands": [{
-            "command": "extension.sayHello",
-            "title": "Hello World"
-        }]
-    },
     "scripts": {
         "postinstall": "node ./node_modules/vscode/bin/install",
         "test": "node ./node_modules/vscode/bin/test"
