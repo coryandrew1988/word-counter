@@ -23,18 +23,28 @@ const createWordCounter = () => {
                 return;
             }
 
-            const { document } = editor;
+            const { document, selection } = editor;
 
             if (document.languageId !== 'markdown') {
                 statusBarItem.hide();
                 return;
             }
 
-            const wordCount = countWords(document.getText());
+            const isSelectionEmpty = selection.start.isEqual(selection.end);
+            const text = (
+                isSelectionEmpty ?
+                document.getText() :
+                document.getText(selection)
+            );
+            const wordCount = countWords(text);
             statusBarItem.text = (
                 wordCount === 1 ?
-                '$(pencil) 1 Word' :
-                `$(pencil) ${wordCount} Words`
+                '$(pencil) 1 Word in' :
+                `$(pencil) ${wordCount} Words in`
+            ) + (
+                isSelectionEmpty ?
+                ' Document' :
+                ' Selection'
             );
             statusBarItem.show();
         },
